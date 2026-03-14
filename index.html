@@ -40,9 +40,7 @@
         .type-huolto { background:#4CAF50; color:white; }
         .type-korjaus { background:#ff9800; color:white; }
         .type-moottori { background:#2196F3; color:white; }
-        .type-talvisailytys { background:#607D8B; color:white; }
-        .type-kevatlaitto { background:#4CAF50; color:white; }
-        .type-muu { background:#9C27B0; color:white; }
+        .type-moottorikorjaus { background:#e53935; color:white; }
         .entry-title { font-size:18px; font-weight:bold; margin:10px 0; color:#333; }
         .entry-detail { margin:5px 0; color:#666; font-size:14px; }
         .hidden { display:none; }
@@ -125,10 +123,13 @@
                 <option value="">-- Valitse vene --</option>
             </select>
         </div>
-        <button class="btn btn-secondary" onclick="showAddCar()">➕ Lisää uusi vene</button>
-        <button class="btn btn-danger" onclick="deleteCar()" id="deleteBtn" style="display:none;">🗑️ Poista valittu vene</button>
-        <button class="btn btn-secondary" onclick="document.getElementById('importFileTop').click()" style="margin-top:10px;">📥 Tuo varmuuskopio</button>
-        <input type="file" id="importFileTop" accept=".json" style="display:none;" onchange="importAllTop()">
+        <button class="btn btn-secondary" onclick="toggleSettings()" id="settingsToggleBtn">⚙️ Asetukset</button>
+        <div id="settingsPanel" style="display:none; margin-top:10px;">
+          <button class="btn btn-secondary" onclick="showAddCar()">➕ Lisää uusi vene</button>
+          <button class="btn btn-danger" onclick="deleteCar()" id="deleteBtn" style="display:none;">🗑️ Poista valittu vene</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('importFileTop').click()" style="margin-top:10px;">📥 Tuo varmuuskopio</button>
+          <input type="file" id="importFileTop" accept=".json" style="display:none;" onchange="importAllTop()">
+        </div>
 
         <div id="addCarForm" class="hidden" style="margin-top:20px;background:white;padding:15px;border-radius:5px;">
             <h4 style="margin-bottom:10px;">Lisää uusi vene</h4>
@@ -166,14 +167,14 @@
             <h3>Lisää huolto/korjaus</h3>
             <div class="form-group">
                 <label>Tyyppi *</label>
-                <select id="entryType"><option value="huolto">Huolto</option><option value="korjaus">Korjaus</option><option value="moottori">Moottorihuolto</option><option value="talvisailytys">Talvisäilytys</option><option value="kevatlaitto">Kevätlaitto</option><option value="muu">Muu</option></select>
+                <select id="entryType"><option value="moottori">Moottorin huolto</option><option value="moottorikorjaus">Moottorin korjaus</option><option value="huolto">Veneen huolto</option><option value="korjaus">Veneen korjaus</option></select>
             </div>
             <div class="form-group">
                 <label>Päivämäärä *</label>
                 <input type="date" id="entryDate">
             </div>
             <div class="form-group">
-                <label>Moottorin tunnit *</label>
+                <label>Moottorin tunnit</label>
                 <input type="number" id="entryKm" placeholder="esim. 250">
             </div>
             <div class="form-group">
@@ -361,6 +362,13 @@ document.getElementById('carSelect').addEventListener('change', async function()
     await saveData();
 });
 
+window.toggleSettings = () => {
+    const panel = document.getElementById('settingsPanel');
+    const btn = document.getElementById('settingsToggleBtn');
+    const open = panel.style.display === 'none';
+    panel.style.display = open ? 'block' : 'none';
+    btn.textContent = open ? '⚙️ Sulje asetukset' : '⚙️ Asetukset';
+};
 window.showAddCar = () => document.getElementById('addCarForm').classList.remove('hidden');
 window.hideAddCar = () => {
     document.getElementById('addCarForm').classList.add('hidden');
@@ -414,7 +422,7 @@ window.addEntry = async () => {
     const date = document.getElementById('entryDate').value;
     const km = document.getElementById('entryKm').value;
     const title = document.getElementById('entryTitle').value.trim();
-    if(!date || !km || !title){ alert('Täytä pakolliset kentät!'); return; }
+    if(!date || !title){ alert('Täytä pakolliset kentät!'); return; }
     const car = getCurrentCar();
     if(!car) return;
     car.entries.push({
