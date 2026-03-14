@@ -46,6 +46,9 @@
         .hidden { display:none; }
         .alert { padding:15px; background:#d4edda; border:1px solid #c3e6cb; color:#155724; border-radius:5px; margin-bottom:15px; }
         @media(min-width:600px){ .stats{ grid-template-columns:repeat(4,1fr); } }
+        .filter-btn { padding:8px 16px; border-radius:20px; border:2px solid #667eea; background:white; color:#667eea; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+        .filter-btn.active { background:#667eea; color:white; }
+        .filter-btn:active { transform:scale(0.96); }
 
         /* Tallennusindikaattori */
         #saveStatus {
@@ -208,6 +211,11 @@
 
         <div class="section">
             <h3>Huoltohistoria (<span id="entryCount">0</span>)</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                <button class="filter-btn active" onclick="setFilter('all')" id="filter-all">🔀 Kaikki</button>
+                <button class="filter-btn" onclick="setFilter('moottori')" id="filter-moottori">⚙️ Moottori</button>
+                <button class="filter-btn" onclick="setFilter('vene')" id="filter-vene">🚤 Vene</button>
+            </div>
             <div id="entriesList"></div>
         </div>
     </div>
@@ -464,9 +472,28 @@ function updateStats(){
 
 function formatDate(d){ return new Date(d).toLocaleDateString('fi-FI'); }
 
+let activeFilter = 'all';
+
+window.setFilter = function(filter){
+    activeFilter = filter;
+    ['all','moottori','vene'].forEach(f => {
+        const btn = document.getElementById('filter-'+f);
+        if(btn) btn.classList.toggle('active', f === filter);
+    });
+    showEntries();
+};
+
 function showEntries(){
     const car = getCurrentCar(); if(!car) return;
-    const entries = car.entries.slice().sort((a,b) => new Date(b.date)-new Date(a.date));
+    let entries = car.entries.slice().sort((a,b) => new Date(b.date)-new Date(a.date));
+
+    // Suodatus
+    if(activeFilter === 'moottori'){
+        entries = entries.filter(e => e.type === 'moottori' || e.type === 'moottorikorjaus');
+    } else if(activeFilter === 'vene'){
+        entries = entries.filter(e => e.type === 'huolto' || e.type === 'korjaus');
+    }
+
     const list = document.getElementById('entriesList');
     document.getElementById('entryCount').textContent = entries.length;
     if(!entries.length){ list.innerHTML='<p style="color:#999;text-align:center;padding:20px;">Ei merkintöjä</p>'; return; }
@@ -474,13 +501,18 @@ function showEntries(){
         <div class="entry">
             <div class="entry-header">
                 <div>
-                    <span class="entry-type type-${e.type}">${e.type}</span>
+                    <span class="entry-type type-${e.type}">${
+                        e.type==='moottori'?'Moottorin huolto':
+                        e.type==='moottorikorjaus'?'Moottorin korjaus':
+                        e.type==='huolto'?'Veneen huolto':
+                        e.type==='korjaus'?'Veneen korjaus':e.type
+                    }</span>
                     <div style="margin-top:5px;font-size:13px;color:#666;">${formatDate(e.date)}</div>
                 </div>
                 <button class="btn-danger btn-small" onclick="deleteEntry(${e.id})">Poista</button>
             </div>
             <div class="entry-title">${e.title}</div>
-            <div class="entry-detail"><strong>Moottoritunnit:</strong> ${e.km.toLocaleString('fi-FI')} h</div>
+            ${e.km ? `<div class="entry-detail"><strong>Moottoritunnit:</strong> ${e.km.toLocaleString('fi-FI')} h</div>` : ''}
             ${e.place ? `<div class="entry-detail"><strong>Paikka:</strong> ${e.place}</div>` : ''}
             ${e.cost > 0 ? `<div class="entry-detail"><strong>Hinta:</strong> ${e.cost.toFixed(2)} €</div>` : ''}
             ${e.oil ? `<div class="entry-detail"><strong>Öljy:</strong> ${e.oil}</div>` : ''}
