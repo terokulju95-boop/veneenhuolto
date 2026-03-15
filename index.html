@@ -207,6 +207,7 @@
         <button class="btn btn-secondary" onclick="toggleSettings()" id="settingsToggleBtn">⚙️ Asetukset</button>
         <div id="settingsPanel" style="display:none; margin-top:10px;">
           <button class="btn btn-secondary" onclick="showAddCar()">➕ Lisää uusi vene</button>
+          <button class="btn btn-secondary" onclick="showEditCar()" id="editCarBtn" style="display:none;">✏️ Muokkaa veneen tietoja</button>
           <button class="btn btn-danger" onclick="deleteCar()" id="deleteBtn" style="display:none;">🗑️ Poista valittu vene</button>
           <button class="btn btn-secondary" onclick="document.getElementById('importFileTop').click()" style="margin-top:10px;">📥 Tuo varmuuskopio</button>
           <input type="file" id="importFileTop" accept=".json" style="display:none;" onchange="importAllTop()">
@@ -232,6 +233,29 @@
             </div>
             <button class="btn" onclick="addCar()">Tallenna vene</button>
             <button class="btn btn-secondary" onclick="hideAddCar()">Peruuta</button>
+        </div>
+
+        <!-- Muokkaa veneen tietoja -->
+        <div id="editCarForm" class="hidden" style="margin-top:10px;background:white;padding:15px;border-radius:10px;border:2px solid #b2dff0;">
+            <h4 style="margin-bottom:10px;color:var(--teksti);">✏️ Muokkaa veneen tietoja</h4>
+            <div class="form-group">
+                <label>Merkki *</label>
+                <input type="text" id="editCarMake" placeholder="esim. Buster">
+            </div>
+            <div class="form-group">
+                <label>Malli *</label>
+                <input type="text" id="editCarModel" placeholder="esim. XL">
+            </div>
+            <div class="form-group">
+                <label>Vuosimalli</label>
+                <input type="number" id="editCarYear" placeholder="esim. 2018">
+            </div>
+            <div class="form-group">
+                <label>Rekisterinumero</label>
+                <input type="text" id="editCarPlate" placeholder="esim. P-12345">
+            </div>
+            <button class="btn" onclick="saveEditCar()">💾 Tallenna muutokset</button>
+            <button class="btn btn-secondary" onclick="hideEditCar()">Peruuta</button>
         </div>
     </div>
 
@@ -470,6 +494,7 @@ function initUI(){
         document.getElementById('carSelect').value = currentCarId;
         document.getElementById('carContent').classList.remove('hidden');
         document.getElementById('deleteBtn').style.display = 'block';
+        document.getElementById('editCarBtn').style.display = 'block';
         updateStats();
         showEntries();
         paivitaTunnitNaytto();
@@ -497,10 +522,12 @@ document.getElementById('carSelect').addEventListener('change', async function()
     if(currentCarId){
         document.getElementById('carContent').classList.remove('hidden');
         document.getElementById('deleteBtn').style.display = 'block';
+        document.getElementById('editCarBtn').style.display = 'block';
         updateStats(); showEntries(); paivitaTunnitNaytto(); paivitaHeader();
     } else {
         document.getElementById('carContent').classList.add('hidden');
         document.getElementById('deleteBtn').style.display = 'none';
+        document.getElementById('editCarBtn').style.display = 'none';
     }
     await saveData();
 });
@@ -522,6 +549,35 @@ window.paivitaHeader = function(){
     }
 };
 window.showAddCar = () => document.getElementById('addCarForm').classList.remove('hidden');
+
+window.showEditCar = () => {
+    const car = getCurrentCar(); if(!car) return;
+    document.getElementById('editCarMake').value = car.make || '';
+    document.getElementById('editCarModel').value = car.model || '';
+    document.getElementById('editCarYear').value = car.year || '';
+    document.getElementById('editCarPlate').value = car.plate || '';
+    document.getElementById('editCarForm').classList.remove('hidden');
+};
+
+window.hideEditCar = () => {
+    document.getElementById('editCarForm').classList.add('hidden');
+};
+
+window.saveEditCar = async () => {
+    const make = document.getElementById('editCarMake').value.trim();
+    const model = document.getElementById('editCarModel').value.trim();
+    if(!make || !model){ alert('Merkki ja malli ovat pakollisia!'); return; }
+    const car = getCurrentCar(); if(!car) return;
+    car.make = make;
+    car.model = model;
+    car.year = document.getElementById('editCarYear').value;
+    car.plate = document.getElementById('editCarPlate').value.toUpperCase();
+    hideEditCar();
+    await saveData();
+    updateCarSelect();
+    paivitaHeader();
+    showAlert('Veneen tiedot päivitetty!');
+};
 window.hideAddCar = () => {
     document.getElementById('addCarForm').classList.add('hidden');
     ['carMake','carModel','carYear','carPlate'].forEach(id => document.getElementById(id).value = '');
@@ -560,6 +616,7 @@ window.deleteCar = async () => {
         updateCarSelect();
         document.getElementById('carContent').classList.add('hidden');
         document.getElementById('deleteBtn').style.display = 'none';
+        document.getElementById('editCarBtn').style.display = 'none';
         showAlert('Vene poistettu!');
     }
 };
