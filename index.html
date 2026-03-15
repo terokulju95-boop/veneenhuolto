@@ -51,6 +51,45 @@
 
         .year-header { font-size:16px; font-weight:700; color:#555; margin:18px 0 8px; padding:6px 12px; background:#f0f0f0; border-radius:8px; border-left:4px solid #667eea; }
 
+        /* TUNNIT-OSIO */
+        .tunnit-box { background:linear-gradient(135deg,#0d47a1 0%,#1565c0 100%); border-radius:16px; padding:24px 20px; margin-bottom:20px; color:white; text-align:center; }
+        .tunnit-iso { font-size:64px; font-weight:800; line-height:1; margin:10px 0 4px; letter-spacing:-2px; }
+        .tunnit-label { font-size:14px; opacity:0.8; margin-bottom:20px; }
+        .tunnit-napit { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:16px; }
+        .tunnit-btn { padding:12px 18px; background:rgba(255,255,255,0.18); border:2px solid rgba(255,255,255,0.35); color:white; border-radius:12px; font-size:17px; font-weight:700; cursor:pointer; transition:all 0.2s; min-width:64px; }
+        .tunnit-btn:active { background:rgba(255,255,255,0.35); transform:scale(0.95); }
+        .tunnit-custom { display:flex; gap:8px; justify-content:center; align-items:center; }
+        .tunnit-input { width:90px; padding:10px; border-radius:10px; border:2px solid rgba(255,255,255,0.4); background:rgba(255,255,255,0.12); color:white; font-size:16px; font-weight:700; text-align:center; }
+        .tunnit-input::placeholder { color:rgba(255,255,255,0.5); }
+        .tunnit-input:focus { outline:none; border-color:white; }
+        .tunnit-add-btn { padding:10px 18px; background:white; color:#1565c0; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; }
+        .tunnit-add-btn:active { transform:scale(0.95); }
+        .tunnit-reset { margin-top:10px; background:transparent; border:1px solid rgba(255,255,255,0.3); color:rgba(255,255,255,0.6); border-radius:8px; padding:6px 14px; font-size:12px; cursor:pointer; }
+        .tunnit-reset:hover { border-color:rgba(255,255,255,0.6); color:white; }
+
+        .btn-icon { padding:6px 10px; font-size:13px; border:none; border-radius:7px; cursor:pointer; font-weight:600; transition:all 0.2s; }
+        .btn-icon-edit { background:#e3f2fd; color:#1565c0; }
+        .btn-icon-edit:hover { background:#1565c0; color:white; }
+        .btn-icon-del { background:#ffebee; color:#c62828; }
+        .btn-icon-del:hover { background:#c62828; color:white; }
+
+        /* Muokkausmodal */
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(3px); z-index:10000; display:none; align-items:flex-end; justify-content:center; }
+        .modal-overlay.open { display:flex; animation:fadeInM 0.2s ease; }
+        @keyframes fadeInM { from{opacity:0} to{opacity:1} }
+        .modal-sheet { background:white; border-radius:20px 20px 0 0; padding:24px 20px 36px; width:100%; max-width:640px; animation:slideUpM 0.3s cubic-bezier(0.4,0,0.2,1); max-height:90vh; overflow-y:auto; }
+        @keyframes slideUpM { from{transform:translateY(100%)} to{transform:translateY(0)} }
+        .modal-handle { width:40px; height:4px; border-radius:2px; background:#ddd; margin:0 auto 18px; }
+        .modal-title { font-size:18px; font-weight:700; color:#333; margin-bottom:16px; }
+        .modal-field { margin-bottom:12px; }
+        .modal-field label { display:block; font-size:12px; font-weight:600; color:#666; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.5px; }
+        .modal-field input, .modal-field select, .modal-field textarea { width:100%; padding:10px; border:2px solid #ddd; border-radius:8px; font-size:15px; }
+        .modal-field textarea { min-height:70px; font-family:Arial,sans-serif; }
+        .modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus { border-color:#667eea; outline:none; }
+        .modal-actions { display:flex; gap:10px; margin-top:16px; }
+        .modal-btn-save { flex:1; padding:12px; background:#667eea; color:white; border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; }
+        .modal-btn-cancel { flex:1; padding:12px; background:#f5f5f5; color:#666; border:1px solid #ddd; border-radius:10px; font-size:15px; cursor:pointer; }
+
         .year-2024 { background:#fff8e1; border-color:#ffe082; }
         .year-2025 { background:#e8f5e9; border-color:#a5d6a7; }
         .year-2026 { background:#e3f2fd; border-color:#90caf9; }
@@ -177,6 +216,34 @@
             <div class="stat-box"><div class="stat-value" id="statAvg">0 €</div><div class="stat-label">Keskihinta</div></div>
         </div>
 
+        <!-- MOOTTORIN TUNNIT -->
+        <div style="margin-bottom:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#e3f2fd;border-radius:10px;padding:14px 16px;cursor:pointer;" onclick="toggleTunnit()">
+                <div style="font-weight:700;color:#1565c0;font-size:16px;">⚙️ Moottorin käyttötunnit &nbsp;<span style="font-size:14px;font-weight:400;color:#1976d2;" id="tunnitPieni"></span></div>
+                <span id="tunnitToggleIcon" style="font-size:18px;color:#1565c0;">▼</span>
+            </div>
+            <div id="tunnitPanel" style="display:none;">
+                <div class="tunnit-box" style="border-radius:0 0 16px 16px;margin-top:0;">
+                    <div class="tunnit-iso" id="tunnitDisplay">0</div>
+                    <div class="tunnit-label">tuntia yhteensä</div>
+                    <div class="tunnit-napit">
+                        <button class="tunnit-btn" onclick="lisaaTunnit(0.5)">+½ h</button>
+                        <button class="tunnit-btn" onclick="lisaaTunnit(1)">+1 h</button>
+                        <button class="tunnit-btn" onclick="lisaaTunnit(2)">+2 h</button>
+                        <button class="tunnit-btn" onclick="lisaaTunnit(3)">+3 h</button>
+                        <button class="tunnit-btn" onclick="lisaaTunnit(4)">+4 h</button>
+                    </div>
+                    <div class="tunnit-custom">
+                        <input type="number" class="tunnit-input" id="tunnitManual" placeholder="esim. 5" step="0.5" min="0">
+                        <button class="tunnit-add-btn" onclick="lisaaTunnitKasin()">+ Lisää</button>
+                    </div>
+                    <div>
+                        <button class="tunnit-reset" onclick="asetaTunnit()">✎ Aseta kokonaislukema</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="section">
             <h3>Lisää huolto/korjaus</h3>
             <div class="form-group">
@@ -233,6 +300,33 @@
 </div>
 
 <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importAll()">
+
+<!-- Muokkausmodal -->
+<div class="modal-overlay" id="editModal" onclick="closeEditIfOutside(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Muokkaa merkintää</div>
+    <div class="modal-field"><label>Tyyppi</label>
+      <select id="editType">
+        <option value="moottori">Moottorin huolto</option>
+        <option value="moottorikorjaus">Moottorin korjaus</option>
+        <option value="huolto">Veneen huolto</option>
+        <option value="korjaus">Veneen korjaus</option>
+      </select>
+    </div>
+    <div class="modal-field"><label>Päivämäärä</label><input type="date" id="editDate"></div>
+    <div class="modal-field"><label>Otsikko</label><input type="text" id="editTitle"></div>
+    <div class="modal-field"><label>Moottorin tunnit</label><input type="number" id="editKm" placeholder="esim. 250"></div>
+    <div class="modal-field"><label>Moottorin öljy</label><input type="text" id="editOil" placeholder="esim. 10W-40"></div>
+    <div class="modal-field"><label>Paikka</label><input type="text" id="editPlace"></div>
+    <div class="modal-field"><label>Hinta (€)</label><input type="number" id="editCost" step="0.01"></div>
+    <div class="modal-field"><label>Kuvaus</label><textarea id="editDesc"></textarea></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" onclick="closeEdit()">Peruuta</button>
+      <button class="modal-btn-save" onclick="saveEdit()">Tallenna</button>
+    </div>
+  </div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -350,6 +444,7 @@ function initUI(){
         document.getElementById('deleteBtn').style.display = 'block';
         updateStats();
         showEntries();
+        paivitaTunnitNaytto();
     }
 }
 
@@ -373,7 +468,7 @@ document.getElementById('carSelect').addEventListener('change', async function()
     if(currentCarId){
         document.getElementById('carContent').classList.remove('hidden');
         document.getElementById('deleteBtn').style.display = 'block';
-        updateStats(); showEntries();
+        updateStats(); showEntries(); paivitaTunnitNaytto();
     } else {
         document.getElementById('carContent').classList.add('hidden');
         document.getElementById('deleteBtn').style.display = 'none';
@@ -474,7 +569,7 @@ function updateStats(){
     const entries = car.entries;
     const count = entries.length;
     const totalCost = entries.reduce((s,e) => s+e.cost, 0);
-    const maxKm = count > 0 ? Math.max(...entries.map(e => e.km)) : 0;
+    const maxKm = getCurrentCar()?.tunnit || 0;
     document.getElementById('statCount').textContent = count;
     document.getElementById('statCost').textContent = totalCost.toFixed(0) + ' €';
     document.getElementById('statKm').textContent = maxKm.toLocaleString('fi-FI');
@@ -535,7 +630,10 @@ function showEntries(){
                     }</span>
                     <div style="margin-top:5px;font-size:13px;color:#666;">${formatDate(e.date)}</div>
                 </div>
-                <button class="btn-danger btn-small" onclick="deleteEntry(${e.id})">Poista</button>
+                <div style="display:flex;gap:6px;">
+                    <button class="btn-icon btn-icon-edit" onclick="openEdit(${e.id})">✏️</button>
+                    <button class="btn-icon btn-icon-del" onclick="deleteEntry(${e.id})">✕</button>
+                </div>
             </div>
             <div class="entry-title">${e.title}</div>
             ${e.km ? `<div class="entry-detail"><strong>Moottoritunnit:</strong> ${e.km.toLocaleString('fi-FI')} h</div>` : ''}
@@ -547,6 +645,108 @@ function showEntries(){
     });
     list.innerHTML = html;
 }
+
+// ============================
+// MOOTTORIN TUNNIT
+// ============================
+function getTunnit(){
+    const car = getCurrentCar(); if(!car) return 0;
+    return car.tunnit || 0;
+}
+
+function paivitaTunnitNaytto(){
+    const t = getTunnit();
+    const str = Number.isInteger(t) ? t : t.toFixed(1);
+    document.getElementById('tunnitDisplay').textContent = str;
+    document.getElementById('tunnitPieni').textContent = str + ' h';
+}
+
+window.toggleTunnit = function(){
+    const panel = document.getElementById('tunnitPanel');
+    const icon = document.getElementById('tunnitToggleIcon');
+    const open = panel.style.display === 'none';
+    panel.style.display = open ? 'block' : 'none';
+    icon.textContent = open ? '▲' : '▼';
+};
+
+window.lisaaTunnit = async function(maara){
+    const car = getCurrentCar(); if(!car) return;
+    car.tunnit = Math.round(((car.tunnit || 0) + maara) * 10) / 10;
+    paivitaTunnitNaytto();
+    await saveData();
+};
+
+window.lisaaTunnitKasin = async function(){
+    const val = parseFloat(document.getElementById('tunnitManual').value);
+    if(isNaN(val) || val <= 0){ alert('Anna kelvollinen tuntimäärä!'); return; }
+    const car = getCurrentCar(); if(!car) return;
+    car.tunnit = Math.round(((car.tunnit || 0) + val) * 10) / 10;
+    document.getElementById('tunnitManual').value = '';
+    paivitaTunnitNaytto();
+    await saveData();
+};
+
+window.asetaTunnit = async function(){
+    const val = prompt('Aseta moottorin kokonaistunnit:', getTunnit());
+    if(val === null) return;
+    const n = parseFloat(val);
+    if(isNaN(n) || n < 0){ alert('Virheellinen arvo!'); return; }
+    const car = getCurrentCar(); if(!car) return;
+    car.tunnit = Math.round(n * 10) / 10;
+    paivitaTunnitNaytto();
+    await saveData();
+    showAlert('Tunnit asetettu!');
+};
+
+// ============================
+// MUOKKAUS
+// ============================
+let editingId = null;
+
+window.openEdit = function(id){
+    const car = getCurrentCar(); if(!car) return;
+    const e = car.entries.find(x => x.id === id); if(!e) return;
+    editingId = id;
+    document.getElementById('editType').value = e.type;
+    document.getElementById('editDate').value = e.date;
+    document.getElementById('editTitle').value = e.title;
+    document.getElementById('editKm').value = e.km || '';
+    document.getElementById('editOil').value = e.oil || '';
+    document.getElementById('editPlace').value = e.place || '';
+    document.getElementById('editCost').value = e.cost || '';
+    document.getElementById('editDesc').value = e.desc || '';
+    document.getElementById('editModal').classList.add('open');
+};
+
+window.closeEdit = function(){
+    document.getElementById('editModal').classList.remove('open');
+    editingId = null;
+};
+
+window.closeEditIfOutside = function(e){
+    if(e.target === document.getElementById('editModal')) closeEdit();
+};
+
+window.saveEdit = async function(){
+    const car = getCurrentCar(); if(!car) return;
+    const idx = car.entries.findIndex(x => x.id === editingId); if(idx < 0) return;
+    const title = document.getElementById('editTitle').value.trim();
+    if(!title){ alert('Otsikko on pakollinen!'); return; }
+    car.entries[idx] = {
+        ...car.entries[idx],
+        type: document.getElementById('editType').value,
+        date: document.getElementById('editDate').value,
+        title,
+        km: parseInt(document.getElementById('editKm').value) || 0,
+        oil: document.getElementById('editOil').value,
+        place: document.getElementById('editPlace').value,
+        cost: parseFloat(document.getElementById('editCost').value) || 0,
+        desc: document.getElementById('editDesc').value,
+    };
+    closeEdit();
+    await saveData();
+    updateStats(); showEntries(); showAlert('Merkintä päivitetty!');
+};
 
 // ============================
 // EXPORT / IMPORT
