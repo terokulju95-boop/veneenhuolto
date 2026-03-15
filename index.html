@@ -81,6 +81,21 @@
         .tunnit-add-btn { padding:10px 18px; background:white; color:#1565c0; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; }
         .tunnit-add-btn:active { transform:scale(0.95); }
         .tunnit-reset { margin-top:10px; background:transparent; border:1px solid rgba(255,255,255,0.3); color:rgba(255,255,255,0.6); border-radius:8px; padding:6px 14px; font-size:12px; cursor:pointer; }
+
+        /* OSALISTA */
+        .osat-box { margin-bottom:20px; }
+        .osat-header { display:flex; align-items:center; justify-content:space-between; background:#e0f7f4; border-radius:10px; padding:14px 16px; cursor:pointer; }
+        .osat-header-title { font-weight:700; color:#00695c; font-size:16px; }
+        .osat-panel { background:white; border:1px solid #b2dfdb; border-radius:0 0 12px 12px; overflow:hidden; }
+        .osa-rivi { display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid #e0f2f1; }
+        .osa-rivi:last-child { border-bottom:none; }
+        .osa-nimi { flex:1; font-weight:600; color:var(--teksti); font-size:15px; }
+        .osa-maara { color:#00796b; font-size:14px; font-weight:500; min-width:60px; }
+        .osa-del { background:#ffebee; border:none; color:#c62828; border-radius:8px; padding:6px 10px; font-size:15px; cursor:pointer; min-width:36px; min-height:36px; display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; }
+        .osat-lisaa { display:flex; gap:8px; padding:12px 14px; background:#f0fdfb; flex-wrap:wrap; }
+        .osat-lisaa input { flex:1; min-width:80px; padding:10px; border:2px solid #b2dfdb; border-radius:8px; font-size:15px; }
+        .osat-lisaa-btn { padding:10px 16px; background:linear-gradient(135deg,#00796b,#00acc1); color:white; border:none; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer; min-height:44px; white-space:nowrap; -webkit-tap-highlight-color:transparent; }
+        .osat-tyhjä { padding:16px; text-align:center; color:#aaa; font-size:14px; }
         .tunnit-reset:hover { border-color:rgba(255,255,255,0.6); color:white; }
 
         .btn-icon { padding:6px 10px; font-size:13px; border:none; border-radius:7px; cursor:pointer; font-weight:600; transition:all 0.2s; }
@@ -296,6 +311,24 @@
             </div>
         </div>
 
+        <!-- OSALISTA -->
+        <div class="osat-box">
+            <div class="osat-header" onclick="toggleOsat()">
+                <div class="osat-header-title">🔩 Moottorin osat & tarvikkeet</div>
+                <span id="osatToggleIcon" style="font-size:18px;color:#00695c;">▼</span>
+            </div>
+            <div id="osatPanel" style="display:none;">
+                <div class="osat-panel">
+                    <div id="osatLista"></div>
+                    <div class="osat-lisaa">
+                        <input type="text" id="osaNimi" placeholder="Osan nimi, esim. Moottoriöljy">
+                        <input type="text" id="osaMaara" placeholder="Määrä, esim. 4L" style="max-width:110px;">
+                        <button class="osat-lisaa-btn" onclick="lisaaOsa()">+ Lisää</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="section">
             <h3>Lisää huolto/korjaus</h3>
             <div class="form-group">
@@ -504,6 +537,7 @@ function initUI(){
         showEntries();
         paivitaTunnitNaytto();
         paivitaHeader();
+        renderOsat();
     }
 }
 
@@ -528,7 +562,7 @@ document.getElementById('carSelect').addEventListener('change', async function()
         document.getElementById('carContent').classList.remove('hidden');
         document.getElementById('deleteBtn').style.display = 'block';
         document.getElementById('editCarBtn').style.display = 'block';
-        updateStats(); showEntries(); paivitaTunnitNaytto(); paivitaHeader();
+        updateStats(); showEntries(); paivitaTunnitNaytto(); paivitaHeader(); renderOsat();
     } else {
         document.getElementById('carContent').classList.add('hidden');
         document.getElementById('deleteBtn').style.display = 'none';
@@ -799,6 +833,70 @@ window.asetaTunnit = async function(){
     paivitaTunnitNaytto();
     await saveData();
     showAlert('Tunnit asetettu!');
+};
+
+// ============================
+// OSALISTA
+// ============================
+const OSAT_DEFAULT = [
+    { nimi: 'Moottoriöljy', maara: '' },
+    { nimi: 'Vaihteisto-öljy', maara: '' },
+    { nimi: 'Propulin tiivistesarja', maara: '' },
+    { nimi: 'Sytytystulpat', maara: '' },
+];
+
+function getOsat(){
+    const car = getCurrentCar(); if(!car) return [];
+    if(!car.osat) car.osat = JSON.parse(JSON.stringify(OSAT_DEFAULT));
+    return car.osat;
+}
+
+function renderOsat(){
+    const osat = getOsat();
+    const lista = document.getElementById('osatLista');
+    if(!lista) return;
+    if(!osat.length){
+        lista.innerHTML = '<div class="osat-tyhjä">Ei osia. Lisää alta!</div>';
+        return;
+    }
+    lista.innerHTML = osat.map((o, i) => `
+        <div class="osa-rivi">
+            <div class="osa-nimi">${o.nimi}</div>
+            ${o.maara ? `<div class="osa-maara">${o.maara}</div>` : '<div class="osa-maara" style="color:#ccc;">–</div>'}
+            <button class="osa-del" onclick="poistaOsa(${i})">✕</button>
+        </div>
+    `).join('');
+}
+
+window.toggleOsat = function(){
+    const panel = document.getElementById('osatPanel');
+    const icon = document.getElementById('osatToggleIcon');
+    const open = panel.style.display === 'none';
+    panel.style.display = open ? 'block' : 'none';
+    icon.textContent = open ? '▲' : '▼';
+    if(open) renderOsat();
+};
+
+window.lisaaOsa = async function(){
+    const nimi = document.getElementById('osaNimi').value.trim();
+    if(!nimi){ alert('Anna osan nimi!'); return; }
+    const maara = document.getElementById('osaMaara').value.trim();
+    const car = getCurrentCar(); if(!car) return;
+    if(!car.osat) car.osat = JSON.parse(JSON.stringify(OSAT_DEFAULT));
+    car.osat.push({ nimi, maara });
+    document.getElementById('osaNimi').value = '';
+    document.getElementById('osaMaara').value = '';
+    renderOsat();
+    await saveData();
+};
+
+window.poistaOsa = async function(i){
+    if(!confirm('Poistetaanko osa?')) return;
+    const car = getCurrentCar(); if(!car) return;
+    if(!car.osat) return;
+    car.osat.splice(i, 1);
+    renderOsat();
+    await saveData();
 };
 
 // ============================
