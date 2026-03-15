@@ -319,8 +319,12 @@
                 <input type="text" id="entryOil" placeholder="esim. 10W-40, 4L vaihdettu">
             </div>
             <div class="form-group">
+                <label>Vaihdetut osat</label>
+                <textarea id="entryParts" placeholder="esim. suodatin, anodi, kipinätulpat, vesipumpun tiiviste..." style="min-height:70px;"></textarea>
+            </div>
+            <div class="form-group">
                 <label>Kuvaus</label>
-                <textarea id="entryDesc" placeholder="Mitä tehtiin, mitä osia vaihdettiin..."></textarea>
+                <textarea id="entryDesc" placeholder="Mitä tehtiin..."></textarea>
             </div>
             <div class="form-group">
                 <label>Paikka</label>
@@ -370,6 +374,7 @@
     <div class="modal-field"><label>Otsikko</label><input type="text" id="editTitle"></div>
     <div class="modal-field"><label>Moottorin tunnit</label><input type="number" id="editKm" placeholder="esim. 250"></div>
     <div class="modal-field"><label>Moottorin öljy</label><input type="text" id="editOil" placeholder="esim. 10W-40"></div>
+    <div class="modal-field"><label>Vaihdetut osat</label><textarea id="editParts" placeholder="esim. suodatin, anodi, kipinätulpat..."></textarea></div>
     <div class="modal-field"><label>Paikka</label><input type="text" id="editPlace"></div>
     <div class="modal-field"><label>Hinta (€)</label><input type="number" id="editCost" step="0.01"></div>
     <div class="modal-field"><label>Kuvaus</label><textarea id="editDesc"></textarea></div>
@@ -639,12 +644,13 @@ window.addEntry = async () => {
         type: document.getElementById('entryType').value,
         date, km: parseInt(km), title,
         oil: document.getElementById('entryOil').value,
+        parts: document.getElementById('entryParts').value,
         desc: document.getElementById('entryDesc').value,
         place: document.getElementById('entryPlace').value,
         cost: parseFloat(document.getElementById('entryCost').value) || 0
     });
     await saveData();
-    ['entryKm','entryTitle','entryOil','entryDesc','entryPlace','entryCost'].forEach(id => document.getElementById(id).value = '');
+    ['entryKm','entryTitle','entryOil','entryParts','entryDesc','entryPlace','entryCost'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('entryType').value = 'huolto';
     document.getElementById('entryDate').valueAsDate = new Date();
     updateStats(); showEntries(); showAlert('Merkintä lisätty!');
@@ -735,6 +741,7 @@ function showEntries(){
             ${e.place ? `<div class="entry-detail">📍 <strong>Paikka:</strong> ${e.place}</div>` : ''}
             ${e.cost > 0 ? `<div class="entry-detail">💶 <strong>Hinta:</strong> ${e.cost.toFixed(2)} €</div>` : ''}
             ${e.oil ? `<div class="entry-detail">🛢️ <strong>Öljy:</strong> ${e.oil}</div>` : ''}
+            ${e.parts ? `<div class="entry-detail">🔩 <strong>Osat:</strong> ${e.parts}</div>` : ''}
             ${e.desc ? `<div class="entry-detail" style="margin-top:10px;background:#f8f0ff;">📝 <strong>Kuvaus:</strong> ${e.desc}</div>` : ''}
         </div>`).join('');
     });
@@ -808,6 +815,7 @@ window.openEdit = function(id){
     document.getElementById('editTitle').value = e.title;
     document.getElementById('editKm').value = e.km || '';
     document.getElementById('editOil').value = e.oil || '';
+    document.getElementById('editParts').value = e.parts || '';
     document.getElementById('editPlace').value = e.place || '';
     document.getElementById('editCost').value = e.cost || '';
     document.getElementById('editDesc').value = e.desc || '';
@@ -835,6 +843,7 @@ window.saveEdit = async function(){
         title,
         km: parseInt(document.getElementById('editKm').value) || 0,
         oil: document.getElementById('editOil').value,
+        parts: document.getElementById('editParts').value,
         place: document.getElementById('editPlace').value,
         cost: parseFloat(document.getElementById('editCost').value) || 0,
         desc: document.getElementById('editDesc').value,
